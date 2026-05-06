@@ -1,14 +1,10 @@
 {
 	"required": true,
+	"minVersion": "0.8",
 	"package": "com.savyt711.client.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"client": [
-		"ExampleClientMixin"
-	],
+	"compatibilityLevel": "JAVA_21",
+	"client": [],
 	"injectors": {
 		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
 	}
 }
