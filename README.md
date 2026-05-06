@@ -1,4 +1,4 @@
-# Helmet HUD (In Development) 🛠️
+# Helmet HUD (In Alpha Development Stage) 🛠️
 
 A Fabric mod that adds an immersive, data-driven text overlay to the player's screen when wearing a helmet. Primarily intended for Aviation or Space modpacks. 
 
