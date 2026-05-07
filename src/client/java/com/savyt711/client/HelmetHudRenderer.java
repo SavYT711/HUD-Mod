@@ -15,10 +15,15 @@ public class HelmetHudRenderer {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player == null) return;
 
+            String fps = client.getCurrentFps() + " FPS";
+            drawContext.drawText(client.textRenderer, fps, 2, 2, 0xFFFFFFFF, true);
+
             PlayerEntity player = client.player;
             ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
 
-            if (!helmet.isEmpty() && helmet.getItem() instanceof ArmorItem) {
+            boolean wearing = !helmet.isEmpty() && helmet.getItem() instanceof ArmorItem;
+            HudState.helmetOn = wearing;
+            if (wearing) {
                 renderHud(drawContext, client, player);
             }
         });
