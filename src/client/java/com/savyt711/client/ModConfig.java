@@ -15,8 +15,8 @@ public class ModConfig implements ConfigData {
     public boolean showCompass = true;
 
     // Leveling tool (diamond+ helmet only)
-    public boolean showLevelingTool = true;
-    public boolean showAltitude = true;
+    public boolean showLevelingTool = false;
+    public boolean showAltitude = false;
 
     public static ModConfig get() {
         return AutoConfig.getConfigHolder(ModConfig.class).getConfig();

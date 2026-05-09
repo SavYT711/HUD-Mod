@@ -92,6 +92,9 @@ public class HelmetHudRenderer {
         int suitPercent = totalMaxW == 0 ? 100 : (int) ((float) totalDurW / totalMaxW * 100);
         WarningSounds.tick(o2Percent, hungerPercent, suitPercent);
 
+        //Draws the visual effects for the status bars
+        drawWarningEffects(context, client, o2Percent, hungerPercent, suitPercent);
+
     }
 
     private static void drawCurvedBar(DrawContext context, int x, int bottomY, int width, int height, int curve, int percent, int color, boolean flipCurve) {
@@ -236,5 +239,63 @@ public class HelmetHudRenderer {
                     centerY + 15, 0x00FF00, true);
         }
     }
+
+    private static float pulseTimer = 0;
+
+    private static void drawSoftEdgeWarning(DrawContext context, int screenW, int screenH, int edgeSize, int color) {
+        int baseAlpha = (color >>> 24) & 0xFF;
+        int rgb = color & 0x00FFFFFF;
+
+        for (int i = 0; i < edgeSize; i++) {
+            float fade = 1f - (i / (float) edgeSize);
+            int alpha = (int)(baseAlpha * fade * fade);
+            int fadedColor = (alpha << 24) | rgb;
+
+            // Top
+            context.fill(0, i, screenW, i + 1, fadedColor);
+
+            // Bottom
+            context.fill(0, screenH - i - 1, screenW, screenH - i, fadedColor);
+
+            // Left, avoiding corners
+            // Left
+            context.fill(i, 0, i + 1, screenH, fadedColor);
+
+            // Right
+            context.fill(screenW - i - 1, 0, screenW - i, screenH, fadedColor);
+        }
+    }
+
+    private static void drawWarningEffects(DrawContext context, MinecraftClient client, int o2Percent, int hungerPercent, int suitPercent) {
+        int screenW = client.getWindow().getScaledWidth();
+        int screenH = client.getWindow().getScaledHeight();
+        int edgeSize = 20;
+
+        pulseTimer += 0.05f;
+
+        // O2 pulse — speed increases as O2 drops
+        if (o2Percent <= 25) {
+            float speed = o2Percent <= 10 ? 0.15f : o2Percent <= 15 ? 0.08f : 0.04f;
+            pulseTimer += speed;
+            float pulse = (float)(Math.sin(pulseTimer * Math.PI) + 1) / 2f;
+            int alpha = (int)(pulse * 180);
+            int color = (alpha << 24) | 0x005BB8F5;
+
+            drawSoftEdgeWarning(context, screenW, screenH, edgeSize, color);
+        }
+
+        // Hunger — static dim orange tint on edges
+        if (hungerPercent <= 25) {
+            int color = 0x55FF8C00;
+            drawSoftEdgeWarning(context, screenW, screenH, edgeSize, color);
+        }
+
+        // Suit — static dim red tint on edges
+        if (suitPercent <= 25) {
+            int color = 0x33FF3333;
+            drawSoftEdgeWarning(context, screenW, screenH, edgeSize, color);
+        }
+    }
+
 }
 
