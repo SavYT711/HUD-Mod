@@ -13,7 +13,6 @@ public class ModConfig implements ConfigData {
     public boolean showHunger = true;
     public boolean showSuitIntegrity = true;
     public boolean showCompass = true;
-    public boolean showFps = true;
 
     // Leveling tool (diamond+ helmet only)
     public boolean showLevelingTool = true;

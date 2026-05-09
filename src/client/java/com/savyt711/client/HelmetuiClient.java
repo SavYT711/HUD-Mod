@@ -6,6 +6,7 @@ public class HelmetuiClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ModConfig.register();
+		ModKeybinds.register();
 		HelmetHudRenderer.register();
 	}
 }

@@ -11,12 +11,9 @@ import net.minecraft.item.ItemStack;
 public class HelmetHudRenderer {
 
     public static void register() {
-        HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
+        HudRenderCallback.EVENT.register((drawContext, tickDelta) ->{
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player == null) return;
-
-            String fps = client.getCurrentFps() + " FPS";
-            drawContext.drawText(client.textRenderer, fps, 2, 2, 0xFFFFFFFF, true);
 
             PlayerEntity player = client.player;
             ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
@@ -73,6 +70,10 @@ public class HelmetHudRenderer {
         // Compass bar
         if (config.showCompass) {
             drawCompass(context, client, player);
+        }
+
+        if (config.showLevelingTool || config.showAltitude) {
+            drawAltitudeAndLevel(context, client, player);
         }
     }
 
@@ -170,4 +171,53 @@ public class HelmetHudRenderer {
             default -> String.valueOf(deg);
         };
     }
+
+    private static void drawAltitudeAndLevel(DrawContext context, MinecraftClient client, PlayerEntity player) {
+        int screenW = client.getWindow().getScaledWidth();
+        int screenH = client.getWindow().getScaledHeight();
+        int centerX = screenW / 2;
+        int centerY = screenH / 2;
+
+        // Altitude — player Y position
+        int altitude = (int) player.getY() - 63; // subtracts sea level so the altitude shows from above sea level.
+
+        // Pitch — looking up/down (-90 to 90)
+        float pitch = player.getPitch();
+
+        // Roll is not native in MC so im using 0 for now (Create Aeronautics will provide this later)
+        // float roll = 0;
+
+        // Draw altitude on the right side
+        if (ModConfig.get().showAltitude) {
+            String altText = "ALT: " + altitude + "m";
+            context.drawText(client.textRenderer, altText,
+                    centerX + 20, centerY - 4, 0x00FF00, true);
+        }
+
+        // Draw leveling tool
+        if (ModConfig.get().showLevelingTool) {
+            // Horizon line — moves up/down based on pitch
+            int horizonOffset = (int)(pitch * 1.5f);
+            int lineWidth = 60;
+
+            // Left horizon segment
+            context.fill(centerX - lineWidth - 10, centerY + horizonOffset,
+                    centerX - 15, centerY + horizonOffset + 1, 0xFF00FF00);
+
+            // Right horizon segment
+            context.fill(centerX + 15, centerY + horizonOffset,
+                    centerX + lineWidth + 10, centerY + horizonOffset + 1, 0xFF00FF00);
+
+            // Center crosshair
+            context.fill(centerX - 5, centerY, centerX + 6, centerY + 1, 0xFF00FF00);
+            context.fill(centerX, centerY - 5, centerX + 1, centerY + 6, 0xFF00FF00);
+
+            // Pitch value
+            String pitchText = "PITCH: " + (int)pitch + "°";
+            context.drawText(client.textRenderer, pitchText,
+                    centerX - client.textRenderer.getWidth(pitchText) / 2,
+                    centerY + 15, 0x00FF00, true);
+        }
+    }
 }
+

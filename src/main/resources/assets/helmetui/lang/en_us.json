@@ -4,7 +4,14 @@
   "text.autoconfig.helmetui.option.showHunger": "Show Hunger Bar",
   "text.autoconfig.helmetui.option.showSuitIntegrity": "Show Suit Integrity Bar",
   "text.autoconfig.helmetui.option.showCompass": "Show Compass",
-  "text.autoconfig.helmetui.option.showFps": "Show FPS Counter",
   "text.autoconfig.helmetui.option.showLevelingTool": "Show Leveling Tool",
-  "text.autoconfig.helmetui.option.showAltitude": "Show Altitude Meter"
+  "text.autoconfig.helmetui.option.showAltitude": "Show Altitude Meter",
+
+  "key.categories.helmetui": "Helmet HUD",
+  "key.helmetui.toggleO2": "Toggle O2 Bar",
+  "key.helmetui.toggleHunger": "Toggle Hunger Bar",
+  "key.helmetui.toggleSuitIntegrity": "Toggle Suit Integrity Bar",
+  "key.helmetui.toggleCompass": "Toggle Compass",
+  "key.helmetui.toggleLevelingTool": "Toggle Leveling Tool",
+  "key.helmetui.toggleAltitude": "Toggle Altitude Meter"
 }
