@@ -75,6 +75,23 @@ public class HelmetHudRenderer {
         if (config.showLevelingTool || config.showAltitude) {
             drawAltitudeAndLevel(context, client, player);
         }
+
+        // Calculate percents for warnings
+        int o2Percent = (int) ((float) Math.max(player.getAir(), 0) / player.getMaxAir() * 100);
+        int hungerPercent = (int) (player.getHungerManager().getFoodLevel() / 20f * 100);
+        int totalDurW = 0, totalMaxW = 0;
+        for (EquipmentSlot slot : new EquipmentSlot[]{
+                EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack piece = player.getEquippedStack(slot);
+            if (!piece.isEmpty() && piece.getItem() instanceof ArmorItem) {
+                totalMaxW += piece.getMaxDamage();
+                totalDurW += piece.getMaxDamage() - piece.getDamage();
+            }
+        }
+        int suitPercent = totalMaxW == 0 ? 100 : (int) ((float) totalDurW / totalMaxW * 100);
+        WarningSounds.tick(o2Percent, hungerPercent, suitPercent);
+
     }
 
     private static void drawCurvedBar(DrawContext context, int x, int bottomY, int width, int height, int curve, int percent, int color, boolean flipCurve) {

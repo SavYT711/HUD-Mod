@@ -16,4 +16,9 @@ public class InGameHudMixin {
             info.cancel();
         }
     }
+
+    @Inject(at = @At("HEAD"), method = "renderHealthBar", cancellable = true)
+    private void keepHealthBar(CallbackInfo info) {
+        // do NOT cancel — let health bar always show
+    }
 }
