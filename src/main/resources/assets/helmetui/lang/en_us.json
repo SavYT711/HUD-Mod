@@ -1,0 +1,10 @@
+{
+  "text.autoconfig.helmetui.title": "Helmet HUD Settings",
+  "text.autoconfig.helmetui.option.showO2": "Show O2 Bar",
+  "text.autoconfig.helmetui.option.showHunger": "Show Hunger Bar",
+  "text.autoconfig.helmetui.option.showSuitIntegrity": "Show Suit Integrity Bar",
+  "text.autoconfig.helmetui.option.showCompass": "Show Compass",
+  "text.autoconfig.helmetui.option.showFps": "Show FPS Counter",
+  "text.autoconfig.helmetui.option.showLevelingTool": "Show Leveling Tool",
+  "text.autoconfig.helmetui.option.showAltitude": "Show Altitude Meter"
+}

@@ -30,6 +30,7 @@ public class HelmetHudRenderer {
     }
 
     private static void renderHud(DrawContext context, MinecraftClient client, PlayerEntity player) {
+        ModConfig config = ModConfig.get();
         int screenW = client.getWindow().getScaledWidth();
         int screenH = client.getWindow().getScaledHeight();
 
@@ -39,34 +40,40 @@ public class HelmetHudRenderer {
         int curveAmount = 6;
 
         // O2 — curve flips inward (right)
-        int o2Percent = (int) ((float) Math.max(player.getAir(), 0) / player.getMaxAir() * 100);
-        drawCurvedBar(context, 30, bottomY, barWidth, barHeight, curveAmount, o2Percent, 0x5BB8F5, true);
+        if (config.showO2) {
+            int o2Percent = (int) ((float) Math.max(player.getAir(), 0) / player.getMaxAir() * 100);
+            drawCurvedBar(context, 30, bottomY, barWidth, barHeight, curveAmount, o2Percent, 0x5BB8F5, true);
+            context.drawText(client.textRenderer, "O2",  28, bottomY - barHeight - 10, 0x5BB8F5, true);
+        }
 
         // Hunger — curve flips inward (right)
-        int hungerPercent = (int) (player.getHungerManager().getFoodLevel() / 20f * 100);
-        drawCurvedBar(context, 48, bottomY, barWidth, barHeight, curveAmount, hungerPercent, 0xFF8C00, true);
+        if (config.showHunger) {
+            int hungerPercent = (int) (player.getHungerManager().getFoodLevel() / 20f * 100);
+            drawCurvedBar(context, 48, bottomY, barWidth, barHeight, curveAmount, hungerPercent, 0xFF8C00, true);
+            context.drawText(client.textRenderer, "HGR", 44, bottomY - barHeight - 10, 0xFF8C00, true);
+        }
 
         // Suit integrity — curve faces inward (left)
-        int totalDur = 0, totalMax = 0;
-        for (EquipmentSlot slot : new EquipmentSlot[]{
-                EquipmentSlot.HEAD, EquipmentSlot.CHEST,
-                EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-            ItemStack piece = player.getEquippedStack(slot);
-            if (!piece.isEmpty() && piece.getItem() instanceof ArmorItem) {
-                totalMax += piece.getMaxDamage();
-                totalDur += piece.getMaxDamage() - piece.getDamage();
+        if (config.showSuitIntegrity) {
+            int totalDur = 0, totalMax = 0;
+            for (EquipmentSlot slot : new EquipmentSlot[]{
+                    EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                    EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                ItemStack piece = player.getEquippedStack(slot);
+                if (!piece.isEmpty() && piece.getItem() instanceof ArmorItem) {
+                    totalMax += piece.getMaxDamage();
+                    totalDur += piece.getMaxDamage() - piece.getDamage();
+                }
             }
+            int suitPercent = totalMax == 0 ? 100 : (int) ((float) totalDur / totalMax * 100);
+            drawCurvedBar(context, screenW - 46, bottomY, barWidth, barHeight, curveAmount, suitPercent, 0xFF3333, false);
+            context.drawText(client.textRenderer, "SUT", screenW - 48, bottomY - barHeight - 10, 0xFF3333, true);
         }
-        int suitPercent = totalMax == 0 ? 100 : (int) ((float) totalDur / totalMax * 100);
-        drawCurvedBar(context, screenW - 46, bottomY, barWidth, barHeight, curveAmount, suitPercent, 0xFF3333, false);
-
-        // Labels
-        context.drawText(client.textRenderer, "O2",  28, bottomY - barHeight - 10, 0x5BB8F5, true);
-        context.drawText(client.textRenderer, "HGR", 44, bottomY - barHeight - 10, 0xFF8C00, true);
-        context.drawText(client.textRenderer, "SUT", screenW - 48, bottomY - barHeight - 10, 0xFF3333, true);
 
         // Compass bar
-        drawCompass(context, client, player);
+        if (config.showCompass) {
+            drawCompass(context, client, player);
+        }
     }
 
     private static void drawCurvedBar(DrawContext context, int x, int bottomY, int width, int height, int curve, int percent, int color, boolean flipCurve) {

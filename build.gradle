@@ -8,18 +8,25 @@ group = project.maven_group
 
 repositories {
 	// Loom adds the essential Fabric/Minecraft repositories automatically.
-}
-
-loom {
-	splitEnvironmentSourceSets()
-
-	mods {
-		"helmetui" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
+	maven {
+		name = "Terraformers"
+		url = "https://maven.terraformersmc.com/"
+	}
+	maven {
+		name = "Shedaniel"
+		url = "https://maven.shedaniel.me/"
 	}
 
+	loom {
+		splitEnvironmentSourceSets()
+
+		mods {
+			"helmetui" {
+				sourceSet sourceSets.main
+				sourceSet sourceSets.client
+			}
+		}
+	}
 }
 
 dependencies {
@@ -30,6 +37,10 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	//Cloth-config for mod menu + ModMenu
+	modImplementation "me.shedaniel.cloth:cloth-config-fabric:15.0.140"
+	modImplementation "com.terraformersmc:modmenu:11.0.1"
 }
 
 processResources {

@@ -15,12 +15,9 @@
 	"icon": "assets/helmetui/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
-			"com.savyt711.Helmetui"
-		],
-		"client": [
-			"com.savyt711.client.HelmetuiClient"
-		]
+		"main": ["com.savyt711.Helmetui"],
+		"client": ["com.savyt711.client.HelmetuiClient"],
+		"modmenu": ["com.savyt711.client.ModMenuIntegration"]
 	},
 	"mixins": [
 		"helmetui.mixins.json",
@@ -31,6 +28,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.16.0",
+		"cloth-config": ">=13.0.121",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*"
