@@ -192,51 +192,153 @@ public class HelmetHudRenderer {
         };
     }
 
+    private static float prevX = 0, prevZ = 0, prevY = 0;
+    private static float smoothSpeed = 0;
+
     private static void drawAltitudeAndLevel(DrawContext context, MinecraftClient client, PlayerEntity player) {
         int screenW = client.getWindow().getScaledWidth();
         int screenH = client.getWindow().getScaledHeight();
         int centerX = screenW / 2;
         int centerY = screenH / 2;
 
-        // Altitude — player Y position
-        int altitude = (int) player.getY() - 63; // subtracts sea level so the altitude shows from above sea level.
-
-        // Pitch — looking up/down (-90 to 90)
         float pitch = player.getPitch();
+        int altitude = (int) player.getY() - 64;
 
-        // Roll is not native in MC so im using 0 for now (Create Aeronautics will provide this later)
-        // float roll = 0;
+        // Calculate speed in blocks per second (20 ticks per second)
+        float dx = (float)(player.getX() - prevX);
+        float dy = (float)(player.getY() - prevY);
+        float dz = (float)(player.getZ() - prevZ);
+        float rawSpeed = (float) Math.sqrt(dx*dx + dy*dy + dz*dz) * 20;
 
-        // Draw altitude on the right side
-        if (ModConfig.get().showAltitude) {
-            String altText = "ALT: " + altitude + "m";
-            context.drawText(client.textRenderer, altText,
-                    centerX + 20, centerY - 4, 0x00FF00, true);
-        }
+        smoothSpeed = smoothSpeed * 0.8f + rawSpeed * 0.2f; // smooth it out
 
-        // Draw leveling tool
+        prevX = (float) player.getX();
+        prevY = (float) player.getY();
+        prevZ = (float) player.getZ();
+        int speed = (int) smoothSpeed;
+
+        int barH = 120;
+        int barW = 14;
+        int barTop = centerY - barH / 2;
+        int tickRange = 10; // numbers visible above and below center
+
+        // HORIZON LINE
         if (ModConfig.get().showLevelingTool) {
-            // Horizon line — moves up/down based on pitch
             int horizonOffset = (int)(pitch * 1.5f);
-            int lineWidth = 60;
+            int dashWidth = 18;
+            int gapWidth = 6;
+            int totalWidth = 120;
+            int startX = centerX - totalWidth / 2;
 
-            // Left horizon segment
-            context.fill(centerX - lineWidth - 10, centerY + horizonOffset,
-                    centerX - 15, centerY + horizonOffset + 1, 0xFF00FF00);
+            // Dashed horizon lock (0 degrees - always at centerY)
+            int halfW = 120;
 
-            // Right horizon segment
-            context.fill(centerX + 15, centerY + horizonOffset,
-                    centerX + lineWidth + 10, centerY + horizonOffset + 1, 0xFF00FF00);
+            //left dash
+            int x = startX;
+            while (x < centerX - 20) {
+                int end = Math.min(x + 18, centerX - 20);
+                context.fill(x, centerY, end, centerY + 1, 0xFF00FF00);
+                x += 24;
+            }
 
-            // Center crosshair
-            context.fill(centerX - 5, centerY, centerX + 6, centerY + 1, 0xFF00FF00);
-            context.fill(centerX, centerY - 5, centerX + 1, centerY + 6, 0xFF00FF00);
+            //right dash
+            x = centerX + 20;
+            while (x < centerX + halfW) {
+                int end = Math.min(x + 18, centerX + halfW);
+                context.fill(x, centerY, end, centerY + 1, 0xFF00FF00);
+                x += 24;
+            }
+
+            // Solid pitch line (moves with pitch)
+            context.fill(centerX - totalWidth/2, centerY + horizonOffset,
+                    centerX - 20, centerY + horizonOffset + 1, 0xFF00FF00);
+            context.fill(centerX + 20, centerY + horizonOffset,
+                    centerX + totalWidth/2, centerY + horizonOffset + 1, 0xFF00FF00);
+
+            // Fixed center aircraft symbol
+            context.fill(centerX - 12, centerY, centerX - 4, centerY + 1, 0xFF00FF00);
+            context.fill(centerX + 4,  centerY, centerX + 12, centerY + 1, 0xFF00FF00);
+            context.fill(centerX - 1,  centerY - 4, centerX + 1, centerY + 4, 0xFF00FF00);
 
             // Pitch value
-            String pitchText = "PITCH: " + (int)pitch + "°";
+            String pitchText = (int)pitch + "°";
             context.drawText(client.textRenderer, pitchText,
                     centerX - client.textRenderer.getWidth(pitchText) / 2,
-                    centerY + 15, 0x00FF00, true);
+                    centerY + 10, 0xFF00FF00, true);
+        }
+
+        // ALTITUDE METER (right side)
+        if (ModConfig.get().showAltitude) {
+            int altX = centerX + 80;
+
+            // Scrolling numbers
+            for (int i = -tickRange; i <= tickRange; i++) {
+                int tickAlt = altitude + i;
+                float t = (float) i / tickRange;
+                int tickY = centerY - (int)(t * (barH / 2));
+
+                if (tickY < barTop || tickY > barTop + barH) continue;
+
+                if (tickAlt % 5 == 0) {
+                    context.fill(altX, tickY, altX + 6, tickY + 1, 0xFF00FF00);
+                    String label = String.valueOf(tickAlt);
+                    context.drawText(client.textRenderer, label,
+                            altX + barW + 3, tickY - 3, 0xFF00FF00, true);
+                } else {
+                    context.fill(altX, tickY, altX + 3, tickY + 1, 0xFF00FF00);
+                }
+            }
+
+            // Center marker
+            context.fill(altX - 3, centerY - 1, altX, centerY + 2, 0xFF00FF00);
+            context.fill(altX + barW, centerY - 1, altX + barW + 3, centerY + 2, 0xFF00FF00);
+
+            // Current altitude box
+            int altLabelW = client.textRenderer.getWidth(String.valueOf(altitude)) + 6;
+            context.fill(altX - 1, centerY - 6, altX + altLabelW, centerY + 7, 0xFF000000);
+            context.fill(altX - 1, centerY - 6, altX + altLabelW, centerY + 7, 0x8800FF00);
+            String altText = String.valueOf(altitude);
+            context.drawText(client.textRenderer, altText,
+                    altX + barW / 2 - client.textRenderer.getWidth(altText) / 2,
+                    centerY - 3, 0xFF00FF00, true);
+        }
+
+        //  SPEED METER (left side)
+        if (ModConfig.get().showLevelingTool) {
+            int spdX = centerX - 80 - barW;
+
+            // Scrolling numbers
+            for (int i = -tickRange; i <= tickRange; i++) {
+                //int tickSpd = Math.max(speed + i, 0);
+                int tickSpd = speed + i;
+                if (tickSpd < 0) continue;
+                float t = (float) i / tickRange;
+                int tickY = centerY - (int)(t * (barH / 2));
+
+                if (tickY < barTop || tickY > barTop + barH) continue;
+
+                if (tickSpd % 5 == 0) {
+                    context.fill(spdX + barW - 6, tickY, spdX + barW, tickY + 1, 0xFF00FF00);
+                    String label = String.valueOf(tickSpd);
+                    context.drawText(client.textRenderer, label,
+                            spdX - client.textRenderer.getWidth(label) - 3,
+                            tickY - 3, 0xFF00FF00, true);
+                } else {
+                    context.fill(spdX + barW - 3, tickY, spdX + barW, tickY + 1, 0xFF00FF00);
+                }
+            }
+
+            // Center marker
+            context.fill(spdX - 3, centerY - 1, spdX, centerY + 2, 0xFF00FF00);
+            context.fill(spdX + barW, centerY - 1, spdX + barW + 3, centerY + 2, 0xFF00FF00);
+
+            // Current speed box
+            context.fill(spdX - 1, centerY - 6, spdX + barW + 1, centerY + 7, 0xFF000000);
+            context.fill(spdX - 1, centerY - 6, spdX + barW + 1, centerY + 7, 0x8800FF00);
+            String spdText = String.valueOf(speed);
+            context.drawText(client.textRenderer, spdText,
+                    spdX + barW / 2 - client.textRenderer.getWidth(spdText) / 2,
+                    centerY - 3, 0xFF00FF00, true);
         }
     }
 
